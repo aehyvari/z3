@@ -381,7 +381,7 @@ int gomory::find_basic_var() {
     int result = -1;
     unsigned min_row_size = UINT_MAX;
 
-#if 0
+//#if 0
     result = lia.select_int_infeasible_var();
 
     if (result == -1)
@@ -390,7 +390,7 @@ int gomory::find_basic_var() {
     const row_strip<mpq>& row = lra.get_row(lia.row_of_basic_column(result));
     if (is_gomory_cut_target(row)) 
         return result;
-#endif
+//#endif
 
     for (unsigned j : lra.r_basis()) {
         if (!lia.column_is_int_inf(j))
