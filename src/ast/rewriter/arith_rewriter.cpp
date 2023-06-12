@@ -875,6 +875,7 @@ br_status arith_rewriter::mk_add_core(unsigned num_args, expr * const * args, ex
 }
 
 br_status arith_rewriter::mk_mul_core(unsigned num_args, expr * const * args, expr_ref & result) {
+    expr *b, *x, *y;
     if (is_anum_simp_target(num_args, args)) {
         expr_ref_buffer new_args(m);
         anum_manager & am = m_util.am();
@@ -917,8 +918,13 @@ br_status arith_rewriter::mk_mul_core(unsigned num_args, expr * const * args, ex
             return BR_DONE;
         }
         return st;
-    }
-    else {
+    } else if (num_args == 2 && m.is_ite(args[0], b, x, y)) {
+        result = m.mk_ite(b, m_util.mk_mul(x, args[1]), m_util.mk_mul(y, args[1]));
+        return BR_REWRITE2;
+    } else if (num_args == 2 && m.is_ite(args[1], b, x, y)) {
+        result = m.mk_ite(b, m_util.mk_mul(x, args[0]), m_util.mk_mul(y, args[0]));
+        return BR_REWRITE2;
+    } else {
         return poly_rewriter<arith_rewriter_core>::mk_mul_core(num_args, args, result);
     }
 }
