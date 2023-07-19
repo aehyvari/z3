@@ -1528,12 +1528,16 @@ namespace smt {
     }
 
     void context::dump_lemma(unsigned n, literal const* lits) {
-        if (m_fparams.m_lemmas2console) {
+        if (m_fparams.m_lemmas2console && n == 1) {
             expr_ref fml(m);
             expr_ref_vector fmls(m);
             for (unsigned i = 0; i < n; ++i)
                 fmls.push_back(literal2expr(lits[i]));
             fml = mk_or(fmls);
+            if (m.is_or(fml)) {
+                return;
+            }
+
             m_lemma_visitor.collect(fml);
             m_lemma_visitor.display_skolem_decls(std::cout);
             m_lemma_visitor.display_assert(std::cout, fml.get(), false);
