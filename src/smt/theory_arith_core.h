@@ -1478,7 +1478,6 @@ namespace smt {
             elim_quasi_base_rows();
         move_unconstrained_to_base();
         m_arith_eq_adapter.init_search_eh();
-        m_final_check_idx    = 0;
         m_nl_gb_exhausted    = false;
         m_nl_strategy_idx    = 0;
     }
@@ -1486,18 +1485,17 @@ namespace smt {
     template<typename Ext>
     final_check_status theory_arith<Ext>::final_check_core() {
         m_model_depends_on_computed_epsilon = false;
-        unsigned old_idx = m_final_check_idx;
         final_check_status result = FC_DONE;
         final_check_status ok;
-        do {
+        for (int mode = 0; mode < 3; ++ mode) {
             if (ctx.get_cancel_flag()) {
                 return FC_GIVEUP;
             }
 
             SASSERT(m_to_patch.empty());
 
-            TRACE("arith", tout << "m_final_check_idx: " << m_final_check_idx << ", result: " << result << "\n";);
-            switch (m_final_check_idx) {
+            TRACE("arith", tout << "mode: " << mode << ", result: " << result << "\n";);
+            switch (mode) {
             case 0:
                 ok = check_int_feasibility();
                 TRACE("arith", tout << "check_int_feasibility(), ok: " << ok << "\n";);
@@ -1514,7 +1512,6 @@ namespace smt {
                 TRACE("arith", tout << "non_linear(), ok: " << ok << "\n";);
                 break;
             }
-            m_final_check_idx = (m_final_check_idx + 1) % 3;
             switch (ok) {
             case FC_DONE:
                 break;
@@ -1528,7 +1525,7 @@ namespace smt {
                 return FC_CONTINUE;
             }
         }
-        while (m_final_check_idx != old_idx);
+
         if (result == FC_DONE) {
             for (app* n : m_unsupported_ops) {
                 if (!ctx.is_relevant(n))
